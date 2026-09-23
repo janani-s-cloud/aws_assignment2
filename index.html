@@ -1,0 +1,624 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AWS Elevate | EC2 Deployment</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #05070d;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* =========================
+           ANIMATED BACKGROUND
+        ========================== */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            z-index: -2;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(255, 153, 0, 0.15), transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0, 170, 255, 0.12), transparent 30%),
+                #05070d;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 10s infinite ease-in-out;
+        }
+
+        .orb1 {
+            width: 280px;
+            height: 280px;
+            background: rgba(255, 153, 0, 0.18);
+            top: -80px;
+            left: -80px;
+        }
+
+        .orb2 {
+            width: 350px;
+            height: 350px;
+            background: rgba(0, 136, 255, 0.12);
+            right: -100px;
+            bottom: -100px;
+            animation-delay: 2s;
+        }
+
+        .orb3 {
+            width: 180px;
+            height: 180px;
+            background: rgba(255, 94, 0, 0.1);
+            top: 45%;
+            left: 50%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(40px, -40px);
+            }
+        }
+
+        /* =========================
+           PARTICLES
+        ========================== */
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #ff9900;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: particleFloat linear infinite;
+        }
+
+        @keyframes particleFloat {
+            from {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.8;
+            }
+
+            80% {
+                opacity: 0.8;
+            }
+
+            to {
+                transform: translateY(-10vh);
+                opacity: 0;
+            }
+        }
+
+        /* =========================
+           NAVBAR
+        ========================== */
+
+        nav {
+            width: 100%;
+            padding: 24px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #ff9900;
+        }
+
+        .nav-badge {
+            padding: 8px 15px;
+            border: 1px solid rgba(255, 153, 0, 0.3);
+            border-radius: 30px;
+            background: rgba(255, 153, 0, 0.06);
+            color: #ffb84d;
+            font-size: 13px;
+        }
+
+        /* =========================
+           MAIN HERO
+        ========================== */
+
+        main {
+            min-height: calc(100vh - 90px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px 80px;
+        }
+
+        .container {
+            width: min(1050px, 100%);
+            text-align: center;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(0, 255, 170, 0.25);
+            background: rgba(0, 255, 170, 0.06);
+            color: #6fffc6;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff9d;
+            box-shadow: 0 0 15px #00ff9d;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.5);
+            }
+        }
+
+        h1 {
+            font-size: clamp(55px, 9vw, 110px);
+            line-height: 0.95;
+            letter-spacing: -5px;
+            margin-bottom: 25px;
+
+            background: linear-gradient(
+                90deg,
+                #ffffff,
+                #ffffff,
+                #ff9900,
+                #ffffff
+            );
+
+            background-size: 250% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+
+            animation: shine 5s linear infinite;
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 250% center;
+            }
+        }
+
+        .subtitle {
+            max-width: 650px;
+            margin: auto;
+            color: #aeb5c2;
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .highlight {
+            color: #ff9900;
+            font-weight: 600;
+        }
+
+        /* =========================
+           GLASS CARD
+        ========================== */
+
+        .glass-card {
+            margin: 50px auto 35px;
+            width: min(850px, 100%);
+            padding: 30px;
+
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+
+            background: rgba(255,255,255,0.045);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.45),
+                inset 0 1px rgba(255,255,255,0.08);
+
+            transition: 0.4s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,153,0,0.3);
+            box-shadow:
+                0 30px 100px rgba(255,153,0,0.08),
+                inset 0 1px rgba(255,255,255,0.1);
+        }
+
+        .terminal {
+            background: #090c12;
+            border-radius: 15px;
+            overflow: hidden;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .terminal-header {
+            padding: 13px 16px;
+            background: #0e121a;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .terminal-header span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #444;
+        }
+
+        .terminal-title {
+            margin-left: 10px;
+            font-size: 12px;
+            color: #747b88;
+        }
+
+        .terminal-body {
+            padding: 25px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            line-height: 2;
+            color: #aab4c3;
+        }
+
+        .orange {
+            color: #ff9900;
+        }
+
+        .green {
+            color: #00ff9d;
+        }
+
+        .blue {
+            color: #55b8ff;
+        }
+
+        /* =========================
+           STATS
+        ========================== */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            padding: 22px;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.025);
+            transition: 0.3s;
+        }
+
+        .stat:hover {
+            background: rgba(255,153,0,0.05);
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 25px;
+            font-weight: 700;
+            color: #ff9900;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7e8795;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* =========================
+           BUTTON
+        ========================== */
+
+        .button {
+            display: inline-block;
+            padding: 14px 25px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #05070d;
+            background: #ff9900;
+            font-weight: 700;
+            transition: 0.3s;
+            box-shadow: 0 10px 30px rgba(255,153,0,0.2);
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            background: #ffad32;
+            box-shadow: 0 15px 40px rgba(255,153,0,0.3);
+        }
+
+        footer {
+            color: #626a77;
+            font-size: 12px;
+            margin-top: 35px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 650px) {
+
+            nav {
+                padding: 20px;
+            }
+
+            h1 {
+                letter-spacing: -3px;
+            }
+
+            .subtitle {
+                font-size: 15px;
+            }
+
+            .glass-card {
+                padding: 18px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .terminal-body {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Animated Background -->
+    <div class="background">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navbar -->
+    <nav>
+        <div class="logo">
+            AWS <span>ELEVATE</span>
+        </div>
+
+        <div class="nav-badge">
+            CLOUD • EC2
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main>
+
+        <div class="container">
+
+            <div class="status">
+                <span class="status-dot"></span>
+                EC2 INSTANCE • ONLINE
+            </div>
+
+            <h1>
+                Welcome to<br>
+                AWS<br>
+                Elevate
+            </h1>
+
+            <p class="subtitle">
+                A simple idea, deployed to the cloud.
+                This page is <span class="highlight">hosted successfully
+                on Amazon EC2</span> — turning code into a live experience.
+            </p>
+
+            <!-- Terminal -->
+            <div class="glass-card">
+
+                <div class="terminal">
+
+                    <div class="terminal-header">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                        <div class="terminal-title">
+                            aws-elevate@ec2: ~
+                        </div>
+                    </div>
+
+                    <div class="terminal-body">
+
+                        <div>
+                            <span class="orange">$</span>
+                            whoami
+                        </div>
+
+                        <div>
+                            <span class="green">developer</span>
+                        </div>
+
+                        <div>
+                            <span class="orange">$</span>
+                            deployment --status
+                        </div>
+
+                        <div>
+                            Status:
+                            <span class="green">SUCCESS</span>
+                        </div>
+
+                        <div>
+                            Platform:
+                            <span class="blue">Amazon EC2</span>
+                        </div>
+
+                        <div>
+                            Environment:
+                            <span class="blue">AWS Cloud</span>
+                        </div>
+
+                        <div>
+                            <span class="orange">$</span>
+                            echo "Hello, Cloud!"
+                        </div>
+
+                        <div>
+                            <span class="green">
+                                Hello, Cloud! 🚀
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Stats -->
+                <div class="stats">
+
+                    <div class="stat">
+                        <div class="stat-number">EC2</div>
+                        <div class="stat-label">Compute</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-number">LIVE</div>
+                        <div class="stat-label">Deployment</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Cloud Hosted</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <a href="#" class="button" onclick="showMessage(event)">
+                🚀 Explore Deployment
+            </a>
+
+            <footer>
+                Built with HTML • CSS • JavaScript
+                &nbsp;|&nbsp; Powered by Amazon EC2
+            </footer>
+
+        </div>
+
+    </main>
+
+    <script>
+
+        /* =========================
+           CREATE PARTICLES
+        ========================== */
+
+        const particles = document.getElementById("particles");
+
+        for (let i = 0; i < 70; i++) {
+
+            const particle = document.createElement("div");
+
+            particle.className = "particle";
+
+            particle.style.left =
+                Math.random() * 100 + "%";
+
+            particle.style.animationDuration =
+                (5 + Math.random() * 10) + "s";
+
+            particle.style.animationDelay =
+                Math.random() * 8 + "s";
+
+            particle.style.opacity =
+                Math.random();
+
+            particles.appendChild(particle);
+        }
+
+
+        /* =========================
+           BUTTON INTERACTION
+        ========================== */
+
+        function showMessage(event) {
+
+            event.preventDefault();
+
+            const button = event.currentTarget;
+
+            button.innerHTML = "✓ EC2 Deployment Verified";
+
+            button.style.background = "#00ff9d";
+
+            setTimeout(() => {
+
+                button.innerHTML = "🚀 Explore Deployment";
+
+                button.style.background = "#ff9900";
+
+            }, 2500);
+        }
+
+    </script>
+
+</body>
+</html>
+```
